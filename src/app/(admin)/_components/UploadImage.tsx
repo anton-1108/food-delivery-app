@@ -1,5 +1,14 @@
 "use client";
 
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+const formSchema = z.object({
+  categoryName: z.string().min(2, {
+    message: "Category name must be at least 2 characters.",
+  }),
+});
+
 import React, { useEffect, useState } from "react";
 
 import {
@@ -12,6 +21,17 @@ import {
 import { Badge, Plus, Trash, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { headers } from "next/headers";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { categoryType } from "@/type/Type";
 
 export default function UploadImage() {
   const [file, setFile] = useState<File | null>(null);
@@ -61,44 +81,60 @@ export default function UploadImage() {
   };
 
   useEffect(() => {
-    const getCategories = async () => {
-      const data = await fetch("http://localhost:8000/food-category");
-      const jsonData = await data.json();
-      setCategories(jsonData.allCategory);
-      console.log(jsonData);
-    };
     getCategories();
-  });
+  }, []);
 
-  const createCategories = async () => {
+  const getCategories = async () => {
+    const data = await fetch("http://localhost:8000/food-category");
+    const jsonData = await data.json();
+    setCategories(jsonData.allCategory);
+    console.log(jsonData);
+  };
+
+  const createCategories = async (category: string) => {
     const data = await fetch("http://localhost:8000/food-category", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ categoryName: "Side Dish" }),
+      body: JSON.stringify({ categoryName: category }),
     });
+    setIsOpen(false);
+    getCategories();
   };
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      categoryName: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    createCategories(values.categoryName);
+  }
 
   return (
-    <div>
-      <div>
+    <div className="">
+      <div className="flex flex-col rounded-[12px] bg-[#fff] h-auto p-[24px] w-[1171px] ml-[20px] gap-[16px]">
         <p className="text-20px">Dishes category</p>
-        <div>
-          {categories?.map((category) => {
+        <div className="flex gap-[12px] flex-wrap self-stretch h-[84px] w-[1124px]">
+          {categories?.map((category: categoryType) => {
             return (
               <div>
-                <Button>{category.categoryName}</Button>
+                <Button variant="outline" key={category._id}>
+                  {category.categoryName}
+                </Button>
               </div>
             );
           })}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="w-12 h-12 bg-red-500 text-white rounded-full text-2xl flex items-center justify-center shadow-lg hover:bg-red-600 transition"
+          >
+            <Plus />
+          </button>
         </div>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="w-12 h-12 bg-red-500 text-white rounded-full text-2xl flex items-center justify-center shadow-lg hover:bg-red-600 transition"
-        >
-          <Plus />
-        </button>
       </div>
 
       <div className="border-2 border-dashed border-[#EF4444] p-[16px] w-[271px] h-[241px]">
@@ -124,7 +160,9 @@ export default function UploadImage() {
                     &times;
                   </button>
                   <div className="flex justify-between">
-                    <h2 className="text-xl font-semibold mb-4">Dishes Info</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      Add new category
+                    </h2>
 
                     <Button
                       onClick={() => setIsOpen(false)}
@@ -135,54 +173,29 @@ export default function UploadImage() {
                     </Button>
                   </div>
 
-                  <div className="flex">
-                    <p>Dish name</p>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded-lg mt-1"
-                      placeholder="Enter dish name"
-                    />
-                  </div>
-                  <div className="flex">
-                    <p>Dish category</p>
-                    <Select>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="All dishes">All dishes</SelectItem>
-                        <SelectItem value="Appetizers">Appetizers</SelectItem>
-                        <SelectItem value="Salads">Salads</SelectItem>
-                        <SelectItem value="Pizzas">Pizzas</SelectItem>
-                        <SelectItem value="Lunch favorites">
-                          Lunch favorites
-                        </SelectItem>
-                        <SelectItem value="Main dishes">Main dishes</SelectItem>
-                        <SelectItem value="Fish & Sea foods">
-                          Fish & Sea foods
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex">
-                    <p>Ingredients</p>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded-lg mt-1"
-                      placeholder=""
-                    />
-                  </div>
+                  <div className="flex gap-[24px]">
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-8"
+                      >
+                        <FormField
+                          control={form.control}
+                          name="categoryName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="shadcn" {...field} />
+                              </FormControl>
 
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                  />
-                  <div className="flex justify-between">
-                    <Button variant="outline" className="border-[#EF4444]">
-                      <Trash className="text-[#EF4444]" />
-                    </Button>
-                    <Button>Save changes</Button>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit">Submit</Button>
+                      </form>
+                    </Form>
                   </div>
                 </div>
               </div>
