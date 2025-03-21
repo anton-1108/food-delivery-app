@@ -39,7 +39,7 @@ export default function UploadImage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [categories, setCategories] = useState();
+  const [categories, setCategories] = useState([]);
   const PRESET_NAME = "food-app";
   const CLOUDINARY_NAME = "dakwzoavm";
 
@@ -115,14 +115,18 @@ export default function UploadImage() {
   }
 
   return (
-    <div className="">
-      <div className="flex flex-col rounded-[12px] bg-[#fff] h-auto p-[24px] w-[1171px] ml-[20px] gap-[16px]">
-        <p className="text-20px">Dishes category</p>
+    <div className="bg-[#F4F4F5] w-screen">
+      <div className="flex flex-col rounded-[12px] bg-[#FFF] h-auto p-[24px]  w-[1171px] ml-[20px] gap-[16px]">
+        <h1 className="text-[20px] font-semibold">Dishes category</h1>
         <div className="flex gap-[12px] flex-wrap self-stretch h-[84px] w-[1124px]">
           {categories?.map((category: categoryType) => {
             return (
-              <div>
-                <Button variant="outline" key={category._id}>
+              <div className="flex">
+                <Button
+                  variant="outline"
+                  className="h-[36px]"
+                  key={category._id}
+                >
                   {category.categoryName}
                 </Button>
               </div>
@@ -134,82 +138,59 @@ export default function UploadImage() {
           >
             <Plus />
           </button>
-        </div>
-      </div>
+          {isOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-[#FFF] p-[24px] gap-[24px] rounded-[12px] shadow-lg   w-[460px] h-[272px] flex-col">
+                <button
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  &times;
+                </button>
+                <div className="flex justify-between">
+                  <h2 className="text-[18px] font-semibold mb-4">
+                    Add new category
+                  </h2>
 
-      <div className="border-2 border-dashed border-[#EF4444] p-[16px] w-[271px] h-[241px]">
-        {
-          <div className="flex flex-col items-center gap-[24px] ">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="w-12 h-12 bg-red-500 text-white rounded-full text-2xl flex items-center justify-center shadow-lg hover:bg-red-600 transition"
-            >
-              <Plus />
-            </button>
-            <p className="text-[14px] w-[154px] text-center font-medium ">
-              Add new Dish to Appetizers
-            </p>
-
-            {isOpen && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                  <button
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  <Button
                     onClick={() => setIsOpen(false)}
+                    variant="secondary"
+                    className="w-10 h-10   rounded-full text-2xl flex items-center justify-center shadow-lg "
                   >
-                    &times;
-                  </button>
-                  <div className="flex justify-between">
-                    <h2 className="text-xl font-semibold mb-4">
-                      Add new category
-                    </h2>
-
-                    <Button
-                      onClick={() => setIsOpen(false)}
-                      variant="outline"
-                      className="w-12 h-12 bg-secondary rounded-full text-2xl flex items-center justify-center shadow-lg  transition"
+                    <X className="text-[#18181B]" />
+                  </Button>
+                </div>
+                <div className="flex gap-[24px]">
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-8"
                     >
-                      <X />
-                    </Button>
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="categoryName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Type category name..."
+                                {...field}
+                              />
+                            </FormControl>
 
-                  <div className="flex gap-[24px]">
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-8"
-                      >
-                        <FormField
-                          control={form.control}
-                          name="categoryName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Category Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="shadcn" {...field} />
-                              </FormControl>
-
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button type="submit">Submit</Button>
-                      </form>
-                    </Form>
-                  </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit">Add category</Button>
+                    </form>
+                  </Form>
                 </div>
               </div>
-            )}
-          </div>
-        }
-        <button onClick={handleUpload} disabled={loading}>
-          {loading}
-        </button>
-        {imageUrl && (
-          <div>
-            <img src={imageUrl} alt="" />
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
